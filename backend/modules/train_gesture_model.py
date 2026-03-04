@@ -1,38 +1,50 @@
-import os
 import pandas as pd
-import numpy as np
-from sklearn.ensemble import RandomForestClassifier
 import joblib
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.preprocessing import LabelEncoder
+from sklearn.metrics import accuracy_score, classification_report
 
-dataset_path = "../dataset/gesture"
+# ==========================
+# LOAD DATA
+# ==========================
+data = pd.read_csv("../dataset/hagrid/gesture_landmarks.csv")
 
-X = []
-y = []
+X = data.drop("label", axis=1)
+y = data["label"]
 
-label_map = {}
-label_id = 0
+# ==========================
+# ENCODE LABELS
+# ==========================
+le = LabelEncoder()
+y_encoded = le.fit_transform(y)
 
-for file in os.listdir(dataset_path):
-    if file.endswith(".csv"):
-        gesture_name = file.replace(".csv", "")
-        label_map[label_id] = gesture_name
+# ==========================
+# TRAIN / TEST SPLIT
+# ==========================
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y_encoded, test_size=0.2, random_state=42
+)
 
-        data = pd.read_csv(os.path.join(dataset_path, file), header=None)
-
-        X.extend(data.values)
-        y.extend([label_id] * len(data))
-
-        label_id += 1
-
-X = np.array(X)
-y = np.array(y)
-
+# ==========================
+# TRAIN MODEL
+# ==========================
 model = RandomForestClassifier(n_estimators=200)
-model.fit(X, y)
+model.fit(X_train, y_train)
 
-os.makedirs("../models", exist_ok=True)
+# ==========================
+# EVALUATE
+# ==========================
+y_pred = model.predict(X_test)
 
-joblib.dump(model, "../models/gesture_model.pkl")
-joblib.dump(label_map, "../models/label_map.pkl")
+print("\nAccuracy:", accuracy_score(y_test, y_pred))
+print("\nClassification Report:\n")
+print(classification_report(y_test, y_pred, target_names=le.classes_))
 
-print("Model Trained Successfully")
+# ==========================
+# SAVE MODEL
+# ==========================
+joblib.dump(model, "../dataset/gesture_model.pkl")
+joblib.dump(le, "../dataset/label_encoder.pkl")
+
+print("\nModel saved successfully!")
