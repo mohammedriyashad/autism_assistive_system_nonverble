@@ -1,9 +1,10 @@
 import cv2
 
-from emotion.face_emotion import detect_emotion
-from gesture.gesture_detection import detect_gesture
-from pose.pose_detection import detect_pose
+from face_emotion import detect_emotion
+from gesture_live_test import detect_gesture
+from pose_detection import detect_pose
 from behavior_interpreter import interpret_behavior
+from audio_input import detect_audio
 
 
 cap = cv2.VideoCapture(0)
@@ -17,15 +18,19 @@ while True:
         break
 
     # run perception modules
-    emotion = detect_emotion(frame)
+    emotion, behavior_state = detect_emotion(frame)
     gesture = detect_gesture(frame)
     pose = detect_pose(frame)
+    audio_text = detect_audio()
+    if audio_text is None:
+        audio_text = "none"
 
     # interpret behaviour
     result = interpret_behavior(
         emotion=emotion,
         gesture=gesture,
-        pose=pose
+        pose=pose,
+        audio=audio_text
     )
 
     message = result["message"]
@@ -39,6 +44,8 @@ while True:
 
     cv2.putText(frame, f"Pose: {pose}", (20,100),
                 cv2.FONT_HERSHEY_SIMPLEX,0.7,(0,255,0),2)
+    cv2.putText(frame, f"Audio: {audio_text}", (20,130),
+                cv2.FONT_HERSHEY_SIMPLEX,0.7,(225,255,0),2)
 
     cv2.putText(frame, f"Message: {message}", (20,140),
                 cv2.FONT_HERSHEY_SIMPLEX,0.9,(0,0,255),2)

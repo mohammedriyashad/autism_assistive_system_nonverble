@@ -1,4 +1,4 @@
-def interpret_behavior(emotion=None, gesture=None, pose=None):
+def interpret_behavior(emotion=None, gesture=None, pose=None, audio=None):
     """
     Multimodal Behavior Interpreter
 
@@ -15,6 +15,30 @@ def interpret_behavior(emotion=None, gesture=None, pose=None):
     confidence = 0.5
     intent = "UNKNOWN"
     message = "Unable to understand request"
+
+
+    if audio and audio != "none":
+
+        if "help" in audio.lower():
+            return {
+                "intent": "REQUEST_HELP",
+                "message": "I need help",
+                "confidence": 0.95
+            }
+
+        if "water" in audio.lower():
+            return {
+                "intent": "REQUEST_DRINK",
+                "message": "I want water",
+                "confidence": 0.95
+            }
+
+        if "toilet" in audio.lower():
+            return {
+                "intent": "REQUEST_TOILET",
+                "message": "I need toilet",
+                "confidence": 0.95
+            }
 
     # -----------------------------
     # Emergency detection
